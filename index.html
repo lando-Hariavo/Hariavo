@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gestion Paiements Étudiants - Authentification</title>
+<style>
+  /* RESET & BASE */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin:0; padding:0;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #app {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    padding: 20px 30px 30px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+  /* FORM CONNEXION */
+  #loginForm {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  #loginForm input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 1rem;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  #loginForm input:focus {
+    border-color: #4e8ef7;
+    outline: none;
+    box-shadow: 0 0 8px rgba(78,142,247,0.3);
+  }
+  #loginForm button {
+    width: 100%;
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #loginForm button:hover {
+    background-color: #3b6fd1;
+  }
+  /* TABLEAU */
+  #studentTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    margin-top: 1.5rem;
+  }
+  #studentTable thead tr {
+    background: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    user-select: none;
+  }
+  #studentTable th, #studentTable td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  #studentTable tbody tr {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+  }
+  #studentTable tbody tr:hover {
+    background-color: #f5faff;
+  }
+  /* Boutons */
+  .btn-delete {
+    background-color: #ff6b6b;
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(255,107,107,0.5);
+    transition: background-color 0.25s ease;
+    font-size: 0.9rem;
+  }
+  .btn-delete:hover {
+    background-color: #e54e4e;
+  }
+  #addStudentBtn {
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #addStudentBtn:hover {
+    background-color: #3b6fd1;
+  }
+  /* FORM AJOUT */
+  #addForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    background: #f9fbff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+  }
+  #addForm input[type=text],
+  #addForm input[type=number] {
+    flex: 1 1 140px;
+    padding: 8px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  #addForm input[type=text]:focus,
+  #addForm input[type=number]:focus {
+    border-color: #4e8ef7;
+    outline: none;
+    box-shadow: 0 0 8px rgba(78,142,247,0.3);
+  }
+  #addForm button {
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #addForm button:hover {
+    background-color: #3b6fd1;
+  }
+  /* Lecture seule */
+  .readonly {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  /* Responsive */
+  @media (max-width: 720px) {
+    #addForm {
+      flex-direction: column;
+    }
+    #addForm input, #addForm button {
+      flex: 1 1 100%;
+    }
+    #studentTable th, #studentTable td {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- LOGIN -->
+  <section id="loginSection">
+    <h1>Connexion requise</h1>
+    <form id="loginForm">
+      <input type="text" id="loginMatricule" placeholder="Matricule" required autocomplete="off" />
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required autocomplete="off" />
+      <button type="submit">Se connecter</button>
+    </form>
+    <p id="loginError" style="color: red; display:none; text-align:center; margin-top:0.7rem;">Matricule ou mot de passe incorrect.</p>
+  </section>
+
+  <!-- MAIN APP -->
+  <section id="mainSection" style="display:none;">
+    <h1>Gestion des paiements des étudiants</h1>
+
+    <table id="studentTable" aria-label="Liste des étudiants">
+      <thead>
+        <tr>
+          <th>Nom et prénom</th>
+          <th>Matricule</th>
+          <th>2025 (Ar)</th>
+          <th>2026 (Ar)</th>
+          <th>2027 (Ar)</th>
+          <th>2028 (Ar)</th>
+          <th>Total (Ar)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="studentList">
+        <!-- Dynamique -->
+      </tbody>
+    </table>
+
+    <form id="addForm">
+      <input type="text" id="addNom" placeholder="Nom et prénom" required autocomplete="off" />
+      <input type="text" id="addMatricule" placeholder="Matricule" required autocomplete="off" />
+      <input type="number" id="add2025" placeholder="2025" min="0" value="0" required />
+      <input type="number" id="add2026" placeholder="2026" min="0" value="0" required />
+      <input type="number" id="add2027" placeholder="2027" min="0" value="0" required />
+      <input type="number" id="add2028" placeholder="2028" min="0" value="0" required />
+      <button type="submit">Ajouter</button>
+    </form>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  // === UTILISATEURS AUTORISÉS ===
+  // Matricule -> {password, canEdit}
+  const users = {
+    'E001': { password: 'pass2025', canEdit: true },
+    'E002': { password: 'pass2026', canEdit: false },
+    'E003': { password: 'pass2027', canEdit: true },
+    'E004': { password: 'pass2028', canEdit: false },
+    // Ajoute ici d’autres utilisateurs si besoin
+  };
+
+  // --- Variables DOM ---
+  const loginSection = document.getElementById('loginSection');
+  const mainSection = document.getElementById('mainSection');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+
+  const studentList = document.getElementById('studentList');
+  const addForm = document.getElementById('addForm');
+
+  // Variables pour l'état utilisateur
+  let currentUser = null;
+  let students = JSON.parse(localStorage.getItem('students')) || [];
+
+  // --- Fonctions utiles ---
+  function saveStudents() {
+    localStorage.setItem('students', JSON.stringify(students));
+  }
+
+  // Tri alphabétique par nom (insensible à la casse)
+  function sortStudents() {
+    students.sort((a,b) => a.nom.localeCompare(b.nom, 'fr', {ignorePunctuation:true, sensitivity: 'base'}));
+  }
+
+  function calcTotal(student) {
+    return student.p2025 + student.p2026 + student.p2027 + student.p2028;
+  }
+
+  function formatAr(value) {
+    return value.toLocaleString('fr-FR') + ' Ar';
+  }
+
+  // Affiche le tableau selon les droits utilisateur
+  function renderStudents() {
+    sortStudents();
+    studentList.innerHTML = '';
+
+    if (students.length === 0) {
+      studentList.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888; padding:20px;">Aucun étudiant enregistré.</td></tr>`;
+      return;
+    }
+
+    students.forEach((s, i) => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${s.nom}</td>
+        <td>${s.matricule}</td>
+        <td>${formatAr(s.p2025)}</td>
+        <td>${formatAr(s.p2026)}</td>
+        <td>${formatAr(s.p2027)}</td>
+        <td>${formatAr(s.p2028)}</td>
+        <td>${formatAr(calcTotal(s))}</td>
+        <td>
+          ${currentUser.canEdit ? `<button class="btn-delete" data-index="${i}" aria-label="Supprimer ${s.nom}">Supprimer</button>` : ''}
+        </td>
+      `;
+
+      studentList.appendChild(tr);
+    });
+
+    if (currentUser.canEdit) {
+      // Ajouter event listener suppression
+      studentList.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = parseInt(e.target.dataset.index, 10);
+          if (confirm(`Supprimer ${students[idx].nom} ?`)) {
+            students.splice(idx, 1);
+            saveStudents();
+            renderStudents();
+          }
+        });
+      });
+    }
+  }
+
+  // --- Gestion connexion ---
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const mat = loginForm.loginMatricule.value.trim();
+    const pwd = loginForm.loginPassword.value;
+
+    if (users[mat] && users[mat].password === pwd) {
+      currentUser = { matricule: mat, canEdit: users[mat].canEdit };
+      loginSection.style.display = 'none';
+      mainSection.style.display = 'block';
+      loginError.style.display = 'none';
+      renderStudents();
+      if (!currentUser.canEdit) {
+        addForm.classList.add('readonly');
+      }
+    } else {
+      loginError.style.display = 'block';
+    }
+  });
+
+  // --- Gestion ajout ---
+  addForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!currentUser.canEdit) return;
+
+    // Récupérer données
+    const nom = addForm.addNom.value.trim();
+    const matricule = addForm.addMatricule.value.trim();
+    const p2025 = Number(addForm.add2025.value);
+    const p2026 = Number(addForm.add2026.value);
+    const p2027 = Number(addForm.add2027.value);
+    const p2028 = Number(addForm.add2028.value);
+
+    if (!nom || !matricule || [p2025,p2026,p2027,p2028].some(v => isNaN(v) || v<0)) {
+      alert('Veuillez remplir tous les champs correctement.');
+      return;
+    }
+
+    // Vérifier doublon matricule
+    if (students.some(s => s.matricule.toLowerCase() === matricule.toLowerCase())) {
+      alert('Ce matricule est déjà enregistré.');
+      return;
+    }
+
+    students.push({nom, matricule, p2025, p2026, p2027, p2028});
+    saveStudents();
+    renderStudents();
+
+    addForm.reset();
+    addForm.addNom.focus();
+  });
+
+  // --- Initialisation ---
+  loginForm.loginMatricule.focus();
+
+})();
+</script>
+
+</body>
+</html>
